@@ -125,6 +125,10 @@ class EditScene:
                         # Maintenant qu'on a une image de personnage valide, on va l'ajouter à notre liste
                         self.characters.append({"image": "assets/" + info, "position": {"x": 0, "y": 0},
                                                 "image_dev": pygame.image.load("assets/" + info)})
+                    if event.key == K_BACKSPACE and not self.menu_display and self.dragged_char > -1:
+                        # Permet de supprimer un personnage en appuyant sur le boutton supprimer lorsqu'on a une image selectionnée
+                        self.characters.pop(self.dragged_char)
+                        self.dragged_char = -1
                     if event.key == K_RETURN and not self.menu_display:
                         # Si on appuie sur Entrée, on enregistre la scène
                         # Pour cela, on crée le json de la scène point par point, puis on le renvoie

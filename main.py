@@ -5,6 +5,7 @@ import os
 import MainMenu
 import AskInfo
 import EditScene
+import utils
 
 
 def init():
@@ -41,9 +42,8 @@ def start(screen):
             if info[0] == "quit":
                 return ["quit", ]
             if not os.path.isfile("scenes/scene_" + info + ".json"):
-                file = open("scenes/scene_" + info + ".json", "w")
-                file.write('{"personnage": [], "flags": [], "events": [], "background": "", "text": "", "next":""}')  # On enregistre un JSON presque vide
-                file.close()
+                empty_json = '{"personnages": [], "flags": [], "events": [], "background": "", "music":"", "text": "", "next":""}'
+                utils.save_scene(empty_json, info)  # On enregistre une scène vide pour l'éditer par la suite
             state = ["edit_scene", info]
 
         elif state[0] == "choose_scene":  # Quand on clique sur "Ouvrir un scène", on doit taper laquelle on veut modif
@@ -63,18 +63,34 @@ def start(screen):
 
         elif state[0] == "edit_scene":  # Une fois que le nom de scène a été choisi
             # On doit commencer par récupérer le json
-            name_scene = "scenes/scene_" + state[1] + ".json"
-            file_scene = io.open(name_scene, 'r', encoding='utf-8')
-            json_scene = json.load(file_scene)
-            file_scene.close()
+            name_scene = str(state[1])
+
+            json_scene = utils.load_scene(name_scene)
+
             menu = EditScene.EditScene(screen, json_scene)
             state = menu.start()
 
             if len(state) > 1:
                 # Ici, on a reçu un json à enregistrer
-                file_scene = io.open(name_scene, 'w', encoding='utf-8')
-                file_scene.write(state[1])
-                file_scene.close()
+                utils.save_scene(state[1], name_scene)
+
+                # On demande un nom, pour commencer directement la prochaine save
+                menu = AskInfo.AskInfo(screen, "Nom de la prochaine scene :")
+                next_scene_name = menu.start()
+                if next_scene_name[0] != "quit":
+                    # On enregistre directement le champs next de l'ancienne scene
+                    json_old = json.loads(state[1])
+                    json_old["next"] = next_scene_name
+                    utils.save_scene(json.dumps(json_old), name_scene)
+
+                    if not os.path.isfile("scenes/scene_" + next_scene_name + ".json"):
+                        # Pour gagner du temps, on reprend le même background, et la même musique que pour la scène précédente
+                        # Il y a de grandes chances que ces deux attributs ne changent pas d'une scène à l'autre
+                        new_json = '{"personnages": [], "flags": [], "events": [], "background": "' + json_old["background"] + '", "music":"' + json_old["music"] + '", "text": "", "next":""}'
+                        utils.save_scene(new_json, next_scene_name)
+                    state = ["edit_scene", next_scene_name]
+                else:
+                    return ['quit', ]
 
 
 if __name__ == "__main__":

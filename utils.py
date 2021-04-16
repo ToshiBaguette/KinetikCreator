@@ -1,4 +1,6 @@
 from itertools import chain
+import io
+import json
 
 
 # PARTIE TEXTE
@@ -66,3 +68,17 @@ def get_cursor_pos(cursor, lines):
             y += 1
 
     return x, y
+
+
+# PARTIE SAUVEGARDE DE SCENES
+def save_scene(json, file_path):
+    file_scene = io.open("scenes/scene_" + file_path + ".json", 'w', encoding='utf-8')
+    file_scene.write(json)
+    file_scene.close()
+
+
+def load_scene(file_path):
+    file_scene = io.open("scenes/scene_" + file_path + ".json", 'r', encoding='utf-8')
+    json_scene = json.load(file_scene)
+    file_scene.close()
+    return json_scene
