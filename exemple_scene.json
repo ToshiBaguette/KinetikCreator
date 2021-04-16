@@ -1,0 +1,27 @@
+{
+  "personnages": [
+    {
+      "image": "lien/vers/image",
+      "position": { "x":  0, "y": 0 }
+    },
+    {
+      "image": "lien/vers/image2",
+      "position": { "x": 10, "y": 0 }
+    }
+  ],
+  "flags": [
+    "fade-in",
+    "fade-out"
+  ],
+  "events": [
+    {
+      "type": "shake",
+      "char": 0,
+      "intensity": 5
+    }
+  ],
+  "music": "/lien/vers/la/musique",
+  "background": "nom du background",
+  "text": "Et c'est ainsi que commença la fabuleuse histoire de mon kinetic novel.",
+  "next": "NOM D'UNE SCENE"
+}
