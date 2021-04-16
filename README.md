@@ -1,4 +1,4 @@
-This project is only useful for my other project: UniverseGenesis.
+This project is only useful for my other project: UniverseGenesis => https://github.com/Toshibane/UniverseGenesis.
 
 As UniverseGenesis is a Visual Novel Reader, KinetikCreator is the software allowing to create the scenes that will be read by UniverseGenesis.
 It is fully written in Python with Pygame as a sole dependency.
