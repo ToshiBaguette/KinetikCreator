@@ -167,13 +167,17 @@ class EditChoice:
                         json_file = '{"type":"choice", "personnages":['
                         for char in self.characters:
                             json_file += '{"image":"' + char['image'] + '","position":{"x":' + str(char["position"]["x"]) + ',"y":' + str(char["position"]["y"]) +'}},'
-                        json_file = json_file[:len(json_file) - 1] + '],'
+                        if json_file[-1] == ',':
+                            json_file = json_file[:len(json_file) - 1]
+                        json_file += '],'
                         json_file += '"background":"' + self.background_input.get_value() + '",'
                         json_file += '"music":"' + self.music_input.get_value() + '",'
                         json_file += '"choices":['
                         for i in range(len(self.choices)):
                             json_file += '{"value":"' + self.choices[i].get_value() + '","next":"' + self.next_choices[i].get_value() + '"},'
-                        json_file = json_file[:len(json_file) - 1] + ']}'
+                        if json_file[-1] == ',':
+                            json_file = json_file[:len(json_file) - 1]
+                        json_file += ']}'
 
                         return ["main_menu", json_file]
 

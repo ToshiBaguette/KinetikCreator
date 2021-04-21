@@ -132,11 +132,13 @@ class EditScene:
                         json_file = "{\"type\":\"scene\",\"personnages\":["
                         for char in self.characters:
                             json_file += '{"image":"' + char["image"] + '","position":{"x":' + str(char["position"]["x"]) + ',"y":' + str(char["position"]["y"]) + '}},'
-                        json_file = json_file[:len(json_file) - 1] + "],"
+                        if json_file[-1] == ',':
+                            json_file = json_file[:len(json_file) - 1]
+                        json_file += "],"
                         json_file += '"flags": [], "events": [],'
                         json_file += '"music":"' + self.music_input.get_value() + '",'
                         json_file += '"background":"' + self.background_input.get_value() + '",'
-                        json_file += '"text":"' + self.scene_input.get_value() + '",'
+                        json_file += '"text":"' + self.scene_input.get_value().replace("\n", "\\n") + '",'
                         json_file += '"next":"' + self.next_input.get_value() + '"}'
 
                         return ["main_menu", json_file]
