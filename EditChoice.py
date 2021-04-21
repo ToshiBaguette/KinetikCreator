@@ -1,52 +1,59 @@
-import pygame
-import InputText
-import AskInfo
 import os
-
+import pygame
+from InputText import InputText
 from pygame.locals import *
+from AskInfo import AskInfo
 
 
-class EditScene:
-    def __init__(self, screen, json):
+class EditChoice:
+    def __init__(self, screen: pygame.Surface, json: dict):
         self.menu_display = False
         self.screen = screen
-        self.scene_input = InputText.InputText(140, 10, 1000, 700, json["text"], background_color=(173, 173, 173, 160),
-                                               outline=1, outline_color=(0, 0, 0), text_color=(255, 255, 255), font_size=35)
+
         self.characters = json["personnages"]
-        # Personnage : {"image": "/lien", "position": {"x": x, "y": y}, "image_dev": pygame.Surface}
+
         for char in self.characters:
             char["image_dev"] = pygame.image.load(char["image"])
 
         self.background_text = pygame.font.SysFont("Calibri", 25).render("Background :", False, (255, 255, 255))
-        self.background_input = InputText.InputText(10, 40, 1000, 30, json["background"],
-                                                    background_color=(173, 173, 173, 128), outline=1,
-                                                    outline_color=(0, 0, 0), text_color=(255, 255, 255), selected=False)
+        self.background_input = InputText(10, 40, 1000, 30, json["background"],
+                                          background_color=(173, 173, 173, 128), outline=1,
+                                          outline_color=(0, 0, 0), text_color=(255, 255, 255), selected=False)
+
         self.background = None
         if len(self.background_input.get_value()) > 0:
-            self.background = pygame.transform.scale(pygame.image.load("assets/backgrounds/" + self.background_input.get_value()), (1280, 720))
+            self.background = pygame.transform.scale(
+                pygame.image.load("assets/backgrounds/" + self.background_input.get_value()), (1280, 720))
 
-        self.next_text = pygame.font.SysFont("Calibri", 25).render("Scène Suivante :", False, (255, 255, 255))
-        self.next_input = InputText.InputText(10, 130, 1000, 30, json["next"], background_color=(173, 173, 173, 128),
-                                              outline=1, outline_color=(0, 0, 0), text_color=(255, 255, 255),
-                                              selected=False)
+        self.choices = []
+        self.next_choices = []
+        i = 0
+        for choice in json["choices"]:
+            # Texte du choix
+            self.choices.append(InputText(100, 100 * i + 5 * i + 100, 500, 40, default_text=choice["value"],
+                                          background_color=(173, 173, 173, 128), outline=1,
+                                          outline_color=(0, 0, 0), text_color=(255, 255, 255), selected=False))
+            # Valeur du choix, affichée en appuyant sur shift
+            self.next_choices.append(InputText(100, 100 * i + 5 * i + 100, 500, 40, default_text=choice["next"],
+                                               background_color=(173, 173, 173, 128), outline=1,
+                                               outline_color=(0, 0, 0), text_color=(255, 255, 255), selected=False))
+            i += 1
 
         self.music_text = pygame.font.SysFont("Calibri", 25).render("Musique :", False, (255, 255, 255))
-        self.music_input = InputText.InputText(10, 220, 1000, 30, json["music"], background_color=(173, 173, 173, 128),
-                                               outline=1, outline_color=(0, 0, 0), text_color=(255, 255, 255),
-                                               selected=False)
+        self.music_input = InputText(10, 220, 1000, 30, json["music"], background_color=(173, 173, 173, 128),
+                                     outline=1, outline_color=(0, 0, 0), text_color=(255, 255, 255),
+                                     selected=False)
 
-        self.selected_input = self.scene_input
+        self.selected_input = None
         self.dragged_char = -1
         self.offset_drag = [0, 0]
+        self.displaying_next = False
 
     def render(self):
         if self.menu_display:
             self.screen.fill((0, 0, 0))
             self.screen.blit(self.background_text, (10, 10))
             self.background_input.render(self.screen)
-
-            self.screen.blit(self.next_text, (10, 100))
-            self.next_input.render(self.screen)
 
             self.screen.blit(self.music_text, (10, 190))
             self.music_input.render(self.screen)
@@ -60,8 +67,13 @@ class EditScene:
             for char in self.characters:
                 self.screen.blit(char["image_dev"], (char["position"]["x"], char["position"]["y"]))
 
-            # Finalement on affiche le texte de la scène
-            self.scene_input.render(self.screen)
+            # Finalement, on affiche les choix
+            if self.displaying_next:
+                for choice in self.next_choices:
+                    choice.render(self.screen)
+            else:
+                for choice in self.choices:
+                    choice.render(self.screen)
 
         pygame.display.update()
 
@@ -72,26 +84,32 @@ class EditScene:
 
         if self.menu_display:
             if self.background_input.do_click(mouse_pos):
+                if self.selected_input:
+                    self.selected_input.selected = False
                 self.selected_input = self.background_input
 
-            elif self.next_input.do_click(mouse_pos):
-                self.selected_input = self.next_input
-
         else:
-            if self.scene_input.do_click(mouse_pos):
-                self.selected_input = self.scene_input
+            if self.displaying_next:
+                for choice in self.next_choices:
+                    if choice.do_click(mouse_pos):
+                        self.selected_input = choice
+            else:
+                for choice in self.choices:
+                    if choice.do_click(mouse_pos):
+                        self.selected_input = choice
 
         if self.selected_input:
             self.selected_input.selected = True
 
     def start(self):
-        in_game = True
-
+        in_menu = True
         self.render()
-        while in_game:
+
+        while in_menu:
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    return ["quit", ]
+                    return ['quit', ]
+
                 if event.type == TEXTINPUT and self.selected_input:
                     self.selected_input.type(event)
                     self.render()
@@ -103,10 +121,27 @@ class EditScene:
                     if event.key == K_BACKSPACE:
                         self.selected_input.delete()
                         self.render()
+
                 elif event.type == KEYDOWN:
                     # Dans ce cas, nous appuyons sur une touche alors qu'aucun input n'est selectionné
+                    if event.key == K_LSHIFT and not self.menu_display:  # shift for next scene by choice
+                        self.displaying_next = not self.displaying_next
+                        self.render()
+
+                    if event.key == K_b and not self.menu_display:  # b for new choice
+                        self.choices.append(
+                            InputText(100, 100 * len(self.choices) + 5 * len(self.choices) + 100, 500, 40,
+                                      background_color=(173, 173, 173, 128), outline=1,
+                                      outline_color=(0, 0, 0), text_color=(255, 255, 255), selected=False))
+                        self.next_choices.append(
+                            InputText(100, 100 * len(self.next_choices) + 5 * len(self.next_choices) + 100, 500, 40,
+                                      background_color=(173, 173, 173, 128), outline=1,
+                                      outline_color=(0, 0, 0), text_color=(255, 255, 255), selected=False))
+                        self.render()
+
                     if event.key == K_n and not self.menu_display:  # n pour "nouveau personnage"
-                        menu = AskInfo.AskInfo(self.screen, "Tapez le chemin vers l'image du personnage à importer :\n(sans 'assets/')")
+                        menu = AskInfo(self.screen,
+                                       "Tapez le chemin vers l'image du personnage à importer :\n(sans 'assets/')")
                         info = menu.start()
                         if info[0] == "quit":
                             return ["quit", ]
@@ -129,19 +164,21 @@ class EditScene:
                     if event.key == K_RETURN and not self.menu_display:
                         # Si on appuie sur Entrée, on enregistre la scène
                         # Pour cela, on crée le json de la scène point par point, puis on le renvoie
-                        json_file = "{\"type\":\"scene\",\"personnages\":["
+                        json_file = '{"type":"choice", "personnages":["'
                         for char in self.characters:
-                            json_file += '{"image":"' + char["image"] + '","position":{"x":' + str(char["position"]["x"]) + ',"y":' + str(char["position"]["y"]) + '}},'
-                        json_file = json_file[:len(json_file) - 1] + "],"
-                        json_file += '"flags": [], "events": [],'
-                        json_file += '"music":"' + self.music_input.get_value() + '",'
+                            json_file += '{"image":"' + char['image'] + ',"position":{"x":' + str(char["position"]["x"]) + ',"y":' + str(char["position"]["y"]) +'}},'
+                        json_file = json_file[:len(json_file) - 1] + '],'
                         json_file += '"background":"' + self.background_input.get_value() + '",'
-                        json_file += '"text":"' + self.scene_input.get_value() + '",'
-                        json_file += '"next":"' + self.next_input.get_value() + '"}'
+                        json_file += '"music":"' + self.music_input.get_value() + '",'
+                        json_file += '"choices":['
+                        for i in range(len(self.choices)):
+                            json_file += '{"value":"' + self.choices[i].get_value() + '","next":"' + self.next_choices[i].get_value() + '"},'
+                        json_file = json_file[:len(json_file) - 1] + ']}'
 
                         return ["main_menu", json_file]
 
                     self.render()
+
                 if event.type == MOUSEBUTTONDOWN:
                     if event.button == 1:
                         self.update_selected_input(pygame.mouse.get_pos())

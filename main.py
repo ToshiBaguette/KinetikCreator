@@ -6,6 +6,8 @@ import MainMenu
 import AskInfo
 import EditScene
 import utils
+from NewSceneAsk import NewSceneAsk
+from EditChoice import EditChoice
 
 
 def init():
@@ -37,14 +39,21 @@ def start(screen):
 
         elif state[0] == "create_scene":  # Quand on clique sur "Nouvelle scène", on doit taper un nom
             # Si la scène existe déjà, on l'édit aussi
-            menu = AskInfo.AskInfo(screen, "Entrez un nom de scène :")
+            menu = NewSceneAsk(screen)
             info = menu.start()
+
             if info[0] == "quit":
                 return ["quit", ]
-            if not os.path.isfile("scenes/scene_" + info + ".json"):
-                empty_json = '{"personnages": [], "flags": [], "events": [], "background": "", "music":"", "text": "", "next":""}'
-                utils.save_scene(empty_json, info)  # On enregistre une scène vide pour l'éditer par la suite
-            state = ["edit_scene", info]
+
+            if not os.path.isfile("scenes/scene_" + info[0] + ".json"):
+                empty_json = ""
+                if info[1]:
+                    empty_json = '{"type": "choice", "personnages":[], "background": "", "music":"", "choices":[]}'
+                else:
+                    empty_json = '{"type":"scene", "personnages": [], "flags": [], "events": [], "background": "", "music":"", "text": "", "next":""}'
+                utils.save_scene(empty_json, info[0])
+
+            state = ["edit_scene", info[0]]
 
         elif state[0] == "choose_scene":  # Quand on clique sur "Ouvrir un scène", on doit taper laquelle on veut modif
             menu = AskInfo.AskInfo(screen, "Entrez le nom de la scène à modifier :")
@@ -56,7 +65,7 @@ def start(screen):
                 if info[0] == "quit":
                     return ["quit", ]
                 elif not os.path.isfile("scenes/scene_" + info + ".json"):
-                    info = menu.start("La scène numéro " + info + " n'existe pas.")
+                    info = menu.start("La scène " + info + " n'existe pas.")
                 else:
                     exist = True
             state = ["edit_scene", info]
@@ -67,7 +76,12 @@ def start(screen):
 
             json_scene = utils.load_scene(name_scene)
 
-            menu = EditScene.EditScene(screen, json_scene)
+            menu = None
+            if json_scene["type"] == "choice":
+                menu = EditChoice(screen, json_scene)
+            else:
+                menu = EditScene.EditScene(screen, json_scene)
+
             state = menu.start()
 
             if len(state) > 1:

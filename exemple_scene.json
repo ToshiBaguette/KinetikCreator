@@ -20,6 +20,10 @@
       "intensity": 5
     }
   ],
+  "choices": [
+    { "value": "Choix 1", "next": "scene1" },
+    { "value": "Choix 2", "next": "scene2" }
+  ],
   "music": "/lien/vers/la/musique",
   "background": "nom du background",
   "text": "Et c'est ainsi que commença la fabuleuse histoire de mon kinetic novel.",
