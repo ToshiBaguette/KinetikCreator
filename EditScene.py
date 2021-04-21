@@ -100,7 +100,7 @@ class EditScene:
                     self.selected_input.special_type(event)
                     self.render()
                 elif event.type == KEYDOWN and self.selected_input:
-                    if event.key == K_BACKSPACE:
+                    if event.key in [K_BACKSPACE, K_LEFT, K_RIGHT]:
                         self.selected_input.delete()
                         self.render()
                 elif event.type == KEYDOWN:

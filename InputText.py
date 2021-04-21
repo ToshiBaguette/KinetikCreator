@@ -22,6 +22,7 @@ class InputText:
     def special_type(self, event):
         if event.key == K_RETURN:
             self.text += "\n"
+            self.cursor += 1
         elif event.key == K_BACKSPACE:
             self.delete()
         elif event.key == K_LEFT and self.cursor > 0:

@@ -1,1 +1,0 @@
-{"type":"choice", "personnages":[{"image":"assets/goldy/Sourit.png","position":{"x":945,"y":374}}],"background":"Palais_Uruk.png","music":"","choices":[{"value":"Choix 1","next":"super_scene"},{"value":"Choix 2","next":"super_scene2"}]}
