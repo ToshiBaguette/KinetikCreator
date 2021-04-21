@@ -94,8 +94,9 @@ def start(screen):
                 if next_scene_name[0] != "quit":
                     # On enregistre directement le champs next de l'ancienne scene
                     json_old = json.loads(state[1])
-                    json_old["next"] = next_scene_name
-                    utils.save_scene(json.dumps(json_old), name_scene)
+                    if json_old.get("next", False):
+                        json_old["next"] = next_scene_name
+                        utils.save_scene(json.dumps(json_old), name_scene)
 
                     if not os.path.isfile("scenes/scene_" + next_scene_name + ".json"):
                         # Pour gagner du temps, on reprend le même background, et la même musique que pour la scène précédente

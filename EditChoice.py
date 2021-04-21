@@ -164,9 +164,9 @@ class EditChoice:
                     if event.key == K_RETURN and not self.menu_display:
                         # Si on appuie sur Entrée, on enregistre la scène
                         # Pour cela, on crée le json de la scène point par point, puis on le renvoie
-                        json_file = '{"type":"choice", "personnages":["'
+                        json_file = '{"type":"choice", "personnages":['
                         for char in self.characters:
-                            json_file += '{"image":"' + char['image'] + ',"position":{"x":' + str(char["position"]["x"]) + ',"y":' + str(char["position"]["y"]) +'}},'
+                            json_file += '{"image":"' + char['image'] + '","position":{"x":' + str(char["position"]["x"]) + ',"y":' + str(char["position"]["y"]) +'}},'
                         json_file = json_file[:len(json_file) - 1] + '],'
                         json_file += '"background":"' + self.background_input.get_value() + '",'
                         json_file += '"music":"' + self.music_input.get_value() + '",'
